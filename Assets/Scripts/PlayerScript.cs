@@ -174,6 +174,6 @@ public class PlayerScript : MonoBehaviour
 
         Instantiate(carrot, spawnloc, carrot.transform.rotation);
 
-        // test commit
+        // test commit push cmd
     }
 }
