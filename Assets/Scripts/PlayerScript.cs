@@ -7,6 +7,8 @@ using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEditor.Callbacks;
 using UnityEngine;
 using TMPro;
+using UnityEngine.AI;
+
 public class PlayerScript : MonoBehaviour
 {
 
@@ -15,12 +17,25 @@ public class PlayerScript : MonoBehaviour
     GameObject cam;
     public float speed = 1000;
     float collected = 0;
-    float remaining = 3;
+    float remaining = 20;
     public GameObject endZone;
     float time = 0;
     Boolean timerRunning;
     Boolean powerUpActive = false;
-    TextMeshProUGUI timerDisp;
+    TextMeshProUGUI timerDisp, healthDisp;
+    Animator anim;
+    public GameObject carrot;
+
+    public AudioClip eat;
+    AudioSource charAudio;
+
+    
+
+
+
+    int health = 100;
+
+
 
     void Start()
     {
@@ -28,16 +43,38 @@ public class PlayerScript : MonoBehaviour
         cam = GameObject.Find("Centre");
         timerRunning = true;
         timerDisp = GameObject.Find("TimerDisp").GetComponent<TextMeshProUGUI>();
+        healthDisp = GameObject.Find("Health").GetComponent<TextMeshProUGUI>();
+        anim = GetComponent<Animator>();
+        charAudio = GetComponent<AudioSource>();
+
     }
 
     // Update is called once per frame
     void Update()
     {
+
+
+        HandleMovement();
+        HandleJump();
+        handleGUI();
+        transform.rotation = cam.transform.rotation;
+        // cam.transform.position = rb.transform.position + offset;
+    }
+
+    void HandleMovement()
+
+    {
         float vInput = Input.GetAxis("Vertical");
         rb.AddForce(cam.transform.forward * vInput * speed * Time.deltaTime, 0);
-        HandleJump();
-        handleTimer();
-        // cam.transform.position = rb.transform.position + offset;
+        if (vInput != 0)
+        {
+            anim.SetBool("Moving", true);
+
+
+        }
+        else anim.SetBool("Moving", false);
+
+
     }
 
     void HandleJump()
@@ -45,7 +82,7 @@ public class PlayerScript : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             StartCoroutine(PowerUP());
-            //rb.AddForce(cam.transform.up *300);
+            SpawnPickup();
         }
     }
 
@@ -57,7 +94,8 @@ public class PlayerScript : MonoBehaviour
             speed = speed * 2;
             yield return new WaitForSeconds(5);
             speed = speed / 2;
-            powerUpActive =false;
+            powerUpActive = false;
+
 
         }
 
@@ -77,24 +115,63 @@ public class PlayerScript : MonoBehaviour
             timerRunning = false;
 
         }
+
+    }
+
+
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            if (health > 0)
+            {
+                health = health - 10;
+                rb.AddForce(-transform.forward * 150);
+                collision.gameObject.GetComponent<Termin>().KB(transform.forward * 150);
+
+                if (health <= 0)
+                {
+                    anim.SetBool("Dead", true);
+                    collision.gameObject.GetComponent<Termin>().agent.enabled = false;
+
+                }
+
+            }
+
+
+        }
     }
 
     void pickupCollect()
     {
         collected++;
+        charAudio.PlayOneShot(eat);
+    
         Debug.Log(collected);
         remaining--;
-        if (remaining == 0)
+        if (remaining <= 0)
         {
             endZone.SetActive(true);
         }
+        else SpawnPickup();
     }
 
-    void handleTimer()
+    void handleGUI()
     {
-        timerDisp.text = "Time: " + time;
+        timerDisp.text = "Time: " + Math.Round(time, 2);
         if (timerRunning)
             time = time + Time.deltaTime;
 
+        healthDisp.text = "Health: " + health;
+
+    }
+
+
+    void SpawnPickup()
+    {
+        Vector3 spawnloc = new Vector3(UnityEngine.Random.Range(-8, 8), 2, UnityEngine.Random.Range(-8, 8));
+
+        Instantiate(carrot, spawnloc, carrot.transform.rotation);
     }
 }

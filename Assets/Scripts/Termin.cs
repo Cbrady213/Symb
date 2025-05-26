@@ -8,19 +8,23 @@ public class Termin : MonoBehaviour
 
     int health = 100;
     GameObject player;
-    NavMeshAgent agent;
+    public NavMeshAgent agent;
+    Rigidbody rb;
     // Start is called before the first frame update
     void Start()
     {
         player = GameObject.Find("Player");
         agent = GetComponent<NavMeshAgent>();
+        rb = GetComponent<Rigidbody>();
+        rb.isKinematic = true;
+        rb.useGravity = false;
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        agent.SetDestination(player.transform.position);
+        Movement();
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -29,13 +33,36 @@ public class Termin : MonoBehaviour
     }
     IEnumerator knockdown()
     {
-        //agent.acceleration = 0;
-        //agent.speed = 0;
+
         agent.isStopped = true;
         yield return new WaitForSeconds(5);
-        //agent.acceleration = 8;
-        //agent.speed = 3.5f;
+
         agent.isStopped = false;
+    }
+
+    public void Movement()
+    {
+        agent.SetDestination(player.transform.position);
+    }
+
+    public void KB(Vector3 kbDir)
+    {
+        StartCoroutine(Knockback(kbDir)) ;
+
+    }
+
+    public IEnumerator Knockback(Vector3 direction)
+    {
+        agent.enabled = false;
+        rb.isKinematic = false;
+        rb.useGravity = true;
+        rb.AddForce(direction);
+        yield return new WaitForSeconds(2);
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        agent.enabled = true;
+        agent.Warp(transform.position);
+
     }
 
 
