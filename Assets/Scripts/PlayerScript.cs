@@ -173,5 +173,7 @@ public class PlayerScript : MonoBehaviour
         Vector3 spawnloc = new Vector3(UnityEngine.Random.Range(-8, 8), 2, UnityEngine.Random.Range(-8, 8));
 
         Instantiate(carrot, spawnloc, carrot.transform.rotation);
+
+        // test commit
     }
 }
