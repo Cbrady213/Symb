@@ -25,11 +25,13 @@ public class PlayerScript : MonoBehaviour
     TextMeshProUGUI timerDisp, healthDisp;
     Animator anim;
     public GameObject carrot;
+    public GameObject baby;
+    int countUntilBaby = 5;
 
     public AudioClip eat;
     AudioSource charAudio;
 
-    
+
 
 
 
@@ -82,7 +84,8 @@ public class PlayerScript : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             StartCoroutine(PowerUP());
-            SpawnPickup();
+            SpawnBaby();
+            
         }
     }
 
@@ -147,7 +150,9 @@ public class PlayerScript : MonoBehaviour
     {
         collected++;
         charAudio.PlayOneShot(eat);
-    
+        countUntilBaby--;
+        SpawnBaby();
+
         Debug.Log(collected);
         remaining--;
         if (remaining <= 0)
@@ -175,5 +180,17 @@ public class PlayerScript : MonoBehaviour
         Instantiate(carrot, spawnloc, carrot.transform.rotation);
 
         // test commit push cmd
+    }
+
+    void SpawnBaby()
+    {
+        if (countUntilBaby == 0)
+        {
+            Instantiate(baby, transform.position + (-transform.forward * 2), transform.rotation);
+            countUntilBaby = 5;
+
+        }
+
+
     }
 }
